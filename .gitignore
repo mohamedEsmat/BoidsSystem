@@ -1,0 +1,20 @@
+# Visual Studio / JetBrains Rider files
+.vs/
+.idea/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+
+# Unreal Engine Generated Files (The "Library" folder equivalents)
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Local config
+Config/Local/
+
+# Ignore huge starter content if you aren't using it (Optional but recommended for hackathons)
+# Content/StarterContent/
