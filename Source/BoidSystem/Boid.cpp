@@ -2,6 +2,7 @@
 
 
 #include "Boid.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ABoid::ABoid()
@@ -26,9 +27,43 @@ void ABoid::BeginPlay()
 void ABoid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FVector BoundaryForce = CalculateBoundaryForce();
+	Velocity += BoundaryForce * DeltaTime;
+
 	FVector NewLocation = GetActorLocation() + (Velocity * DeltaTime);
 	SetActorLocation(NewLocation);
+}
 
+void ABoid::SetAllBoidsReference(const TArray<ABoid*>& AllBoids)
+{
+	AllBoidsCache = AllBoids;
+}	
 
+void ABoid::GetNeighborActors(TArray<AActor*>& OutActors) const
+{
+	for (ABoid* Boid : AllBoidsCache)
+	{
+		if (Boid)
+		{
+			OutActors.Add(Boid);
+		}
+	}
+}
+
+FVector ABoid::CalculateBoundaryForce()
+{
+	FVector CurrentLocation = GetActorLocation();
+	FVector CenterToBoid = CurrentLocation - BoundryCenter;
+	float Distance = CenterToBoid.Length();
+	if (Distance > BoundryRadius)
+	{
+		FVector SteeringVector = BoundryCenter - CurrentLocation;
+		SteeringVector.Normalize();
+
+		float ExceedDistance = Distance - BoundryRadius;
+		return SteeringVector * ExceedDistance * BoundryStrength;
+	}
+	return FVector::ZeroVector;
 }
 

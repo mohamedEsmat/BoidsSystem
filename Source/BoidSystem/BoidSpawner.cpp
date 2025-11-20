@@ -18,10 +18,31 @@ void ABoidSpawner::BeginPlay()
 	Super::BeginPlay();
 	if (BoidClass)
 	{
-		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100);
-		FRotator SpawnRotation = FRotator::ZeroRotator;
+		for (int i = 0; i < NumberOfBoids; i++)
+		{
 
-		GetWorld()->SpawnActor<AActor>(BoidClass, SpawnLocation, SpawnRotation);
+			FVector SpawnOffset = FVector(FMath::RandRange(-500, 500),
+				FMath::RandRange(-500, 500),
+				FMath::RandRange(-500, 500));
+
+			FVector SpawnLocation = GetActorLocation() + SpawnOffset;
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+
+			ABoid* NewBoid = GetWorld()->SpawnActor<ABoid>(BoidClass, SpawnLocation, SpawnRotation);
+
+			if (NewBoid)
+			{
+				SpawnedBoids.Add(NewBoid);
+			}
+
+			for (ABoid* Boid : SpawnedBoids)
+			{
+				if (Boid)
+				{
+					Boid->SetAllBoidsReference(SpawnedBoids);
+				}
+			}
+		}
 	}
 
 }

@@ -7,6 +7,7 @@
 #include "BoidSpawner.generated.h"
 
 class ABoid;
+
 UCLASS()
 class BOIDSYSTEM_API ABoidSpawner : public AActor
 {
@@ -26,5 +27,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Boid Spawning")
 	TSubclassOf<class ABoid> BoidClass;
+	UPROPERTY(EditAnywhere, Category = "Boid Spawning", meta = (ClampMin = "1"))
+
+	int32 NumberOfBoids = 10;
+
+private:
+	UPROPERTY()
+	TArray<ABoid*> SpawnedBoids;
 
 };
