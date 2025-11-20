@@ -38,6 +38,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Boid Parameters")
 	FVector BoundryCenter = FVector::ZeroVector;
 
+	UPROPERTY(EditAnywhere, Category = "Avoidance")
+	float AvoidanceDistance = 300.0f;
+	UPROPERTY(EditAnywhere, Category = "Avoidance")
+	float AvoidanceStrength = 500.0f;
+
+	FVector CalculateAvoidanceForce(FHitResult& Hit);
+
 	FVector CalculateBoundaryForce();
 
 	FVector Velocity;
