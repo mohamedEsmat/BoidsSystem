@@ -6,19 +6,108 @@
 
 void FBoidOctreeManager::Initialize(const FVector& Center, float Extent)
 {
-	FVector HalfExntent(Extent,Extent,Extent);
+	FVector HalfExntent(Extent, Extent, Extent);
 	WorldBounds = FBox(Center - HalfExntent, Center + FVector(Extent));
 	RootNode = MakeUnique<FBoidOctreeNode>(WorldBounds);
 }
 
 void FBoidOctreeManager::AddBoid(ABoid* Boid)
 {
-	
+	if (RootNode && Boid)
+	{
+		FBoidOctreeElement NewElement;
+		NewElement.BoidPtr = Boid;
+		NewElement.Location = Boid->GetActorLocation();
+		RootNode->AddElement(NewElement);
+	}
+}
+
+void RecursiveQuery(const FBoidOctreeNode* Node, const FVector& Location, float RadiusSq, TArray<ABoid*>& OutNeighbors)
+{
+	if (!Node)
+	{
+		return;
+	}
+
+	for (const FBoidOctreeElement& Element : Node->Elements)
+	{
+		if (FVector::DistSquared(Element.Location, Location) <= RadiusSq)
+		{
+			OutNeighbors.Add(Element.BoidPtr);
+		}
+	}
+
+	if (Node->Children[0])
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			if (Node->Children[i]->Bounds.ComputeSquaredDistanceToPoint(Location) <= RadiusSq)
+			{
+				RecursiveQuery(Node->Children[i].Get(), Location, RadiusSq, OutNeighbors);
+			}
+		}
+	}
 }
 
 void FBoidOctreeManager::QueryNeighbors(const FVector& Location, float Radius, TArray<ABoid*>& OutNeighbors)
 {
+	if (RootNode)
+	{
+		RecursiveQuery(RootNode.Get(), Location, Radius * Radius, OutNeighbors);
+	}
+}
 
+int FBoidOctreeNode::GetChildIndex(const FVector& Location) const
+{
+	FVector Center = Bounds.GetCenter();
+	int Index = 0;
+	if (Location.X >= Center.X) Index |= 4;
+	if (Location.Y >= Center.Y) Index |= 2;
+	if (Location.Z >= Center.Z) Index |= 1;
+	return Index;
+}
+
+void FBoidOctreeNode::Subdivide()
+{
+	FVector Center = Bounds.GetCenter();
+	FVector HalfExtent = Bounds.GetExtent() / 2.0f;
+
+	for (int i = 0; i < 8; i++)
+	{
+		FVector ChildCenter = Center;
+		if (i & 4) ChildCenter.X += HalfExtent.X; else ChildCenter.X = Center.X - HalfExtent.X;
+		if (i & 2) ChildCenter.Y += HalfExtent.Y; else ChildCenter.Y = Center.Y - HalfExtent.Y;
+		if (i & 1) ChildCenter.Z += HalfExtent.Z; else ChildCenter.Z = Center.Z - HalfExtent.Z;
+
+		FBox ChildBounds(ChildCenter - HalfExtent, ChildCenter + HalfExtent);
+		Children[i] = MakeUnique<FBoidOctreeNode>(ChildBounds);
+	}
+
+	for (const FBoidOctreeElement& Element : Elements)
+	{
+		int ChildIndex = GetChildIndex(Element.Location);
+		Children[ChildIndex]->AddElement(Element);
+	}
+
+	Elements.Empty();
+}
+
+void FBoidOctreeNode::AddElement(const FBoidOctreeElement& Element)
+{
+	if (Children[0])
+	{
+		int ChildIndex = GetChildIndex(Element.Location);
+		Children[ChildIndex]->AddElement(Element);
+		return;
+	}
+
+	if (Elements.Num() >= MAX_ELEMENTS && Bounds.GetExtent().GetMax() > MIN_NODE_SIZE)
+	{
+		Subdivide();
+		AddElement(Element);
+		return;
+	}
+	Elements.Add(Element);
 }
 
 // Sets default values

@@ -21,6 +21,13 @@ struct FBoidOctreeNode
 	FBox Bounds;
 	TArray<FBoidOctreeElement> Elements;
 	TUniquePtr<FBoidOctreeNode> Children[8];
+	static constexpr int MAX_ELEMENTS = 4;
+	static constexpr float MIN_NODE_SIZE = 100.0f;
+
+	void Subdivide();
+	int GetChildIndex(const FVector& Location) const;
+	void AddElement(const FBoidOctreeElement& Element);
+
 
 	FBoidOctreeNode(const FBox& InBounds) : Bounds(InBounds) {}
 };
