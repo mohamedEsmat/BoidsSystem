@@ -58,6 +58,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
 	float AlignmentStrength = 1.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
+	float CohesionDistance = 250.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
+	float CohesionStrength = 1.0f;
+
 	FVector CalculateBoundaryForce();
 
 	FVector CalculateAvoidanceForce(FHitResult& Hit);
@@ -65,6 +71,8 @@ public:
 	FVector CalculateSeparationForce(const TArray<AActor*>& Neighbours);
 
 	FVector CalculateAlignmentForce(const TArray<AActor*>& Neighbours);
+
+	FVector CalculateCohesionForce(const TArray<AActor*>& Neighbours);
 	
 	FVector Velocity;
 

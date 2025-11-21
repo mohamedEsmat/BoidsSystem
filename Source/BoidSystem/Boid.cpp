@@ -187,3 +187,31 @@ FVector ABoid::CalculateAlignmentForce(const TArray<AActor*>& Neighbours)
 	return FVector::ZeroVector;
 }
 
+FVector ABoid::CalculateCohesionForce(const TArray<AActor*>& Neighbours)
+{
+	FVector CenterOfMass = FVector::ZeroVector;
+	int NeighborCount = 0;
+	FVector CurrentLocation = GetActorLocation();
+	for (AActor* NeighborActor : Neighbours)
+	{
+		ABoid* NeighborBoid = Cast<ABoid>(NeighborActor);
+		if (!NeighborBoid || NeighborBoid == this)
+		{
+			continue;
+		}
+		float Distance = FVector::Dist(CurrentLocation, NeighborBoid->GetActorLocation());
+		if (Distance > 0.0f && Distance < CohesionDistance)
+		{
+			CenterOfMass += NeighborBoid->GetActorLocation();
+			NeighborCount++;
+		}
+	}
+	if (NeighborCount > 0)
+	{
+		CenterOfMass /= NeighborCount;
+		FVector DesiredDirection = CenterOfMass - CurrentLocation;
+		return DesiredDirection.GetSafeNormal() * CohesionStrength;
+	}
+	return FVector::ZeroVector;
+}
+
