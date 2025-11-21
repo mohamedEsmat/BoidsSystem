@@ -53,6 +53,9 @@ void ABoid::Tick(float DeltaTime)
 	}
 	Velocity += Acceleration * DeltaTime;
 
+	float DampingFactor = 0.95f;
+	Velocity *= DampingFactor;
+
 	if (!Velocity.IsNearlyZero())
 	{
 		if (Velocity.SizeSquared() > (MaxSpeed * MaxSpeed))
@@ -61,7 +64,7 @@ void ABoid::Tick(float DeltaTime)
 		}
 		else
 		{
-			Velocity = Velocity.GetSafeNormal() * Speed;
+			Velocity = Velocity.GetSafeNormal() * MaxSpeed;
 		}
 		SetActorRotation(Velocity.Rotation());
 	}
