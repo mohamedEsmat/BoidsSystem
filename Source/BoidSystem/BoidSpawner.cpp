@@ -154,6 +154,9 @@ void ABoidSpawner::BeginPlay()
 				Boid->SetParentSpawner(this);
 			}
 		}
+
+		DrawDebugSphere(GetWorld(), OctreeManager.WorldBounds.GetCenter(), OctreeManager.WorldBounds.GetExtent().GetMax(), 32, FColor::Green, true, -1.0f, 0, 5.0f);
+
 	}
 
 }

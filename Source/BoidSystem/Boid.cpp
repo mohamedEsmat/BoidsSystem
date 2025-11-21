@@ -23,7 +23,6 @@ void ABoid::BeginPlay()
 	Super::BeginPlay();
 
 	Velocity = FMath::VRand() * Speed;
-
 }
 
 // Called every frame
