@@ -55,7 +55,14 @@ void ABoid::Tick(float DeltaTime)
 
 	if (!Velocity.IsNearlyZero())
 	{
-		Velocity = Velocity.GetClampedToSize(0.0f, MaxSpeed);
+		if (Velocity.SizeSquared() > (MaxSpeed * MaxSpeed))
+		{
+			Velocity = Velocity.GetClampedToSize(0.0f, MaxSpeed);
+		}
+		else
+		{
+			Velocity = Velocity.GetSafeNormal() * Speed;
+		}
 		SetActorRotation(Velocity.Rotation());
 	}
 
