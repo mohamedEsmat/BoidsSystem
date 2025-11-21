@@ -47,6 +47,9 @@ void ABoid::Tick(float DeltaTime)
 
 		FVector SeparationForce = CalculateSeparationForce(Neighbors);
 		Acceleration += SeparationForce;
+
+		FVector AlignmentForce = CalculateAlignmentForce(Neighbors);
+		Acceleration += AlignmentForce;
 	}
 	Velocity += Acceleration * DeltaTime;
 
@@ -152,5 +155,35 @@ FVector ABoid::CalculateSeparationForce(const TArray<AActor*>& Neighbours)
 		SeparationVector = (SeparationVector / BoidsToSeparateFrom) * SeparationStrength;
 	}
 	return SeparationVector;
+}
+
+FVector ABoid::CalculateAlignmentForce(const TArray<AActor*>& Neighbours)
+{
+	FVector AverageVelocity = FVector::ZeroVector;
+	int NeighborCount = 0;
+	FVector CurrentLocation = GetActorLocation();
+
+	for (AActor* NeighborActor : Neighbours)
+	{
+		ABoid* NeighborBoid = Cast<ABoid>(NeighborActor);
+		if (!NeighborBoid || NeighborBoid == this)
+		{
+			continue;
+		}
+
+		float Distance = FVector::Dist(CurrentLocation, NeighborBoid->GetActorLocation());
+		if (Distance > 0.0f && Distance < AlignmentDistance)
+		{
+			AverageVelocity += NeighborBoid->Velocity;
+			NeighborCount++;
+		}
+	}
+	if (NeighborCount > 0)
+	{
+		AverageVelocity /= NeighborCount;
+		FVector AlignmentSteering = (AverageVelocity - Velocity);
+		return AlignmentSteering * AlignmentStrength;
+	}
+	return FVector::ZeroVector;
 }
 

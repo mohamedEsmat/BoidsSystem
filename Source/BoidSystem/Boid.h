@@ -52,12 +52,20 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
 	float SeparationStrength = 5.0f;
 
-	FVector CalculateSeparationForce(const TArray<AActor*>& Neighbours);
+	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
+	float AlignmentDistance = 200.f;
 
-	FVector CalculateAvoidanceForce(FHitResult& Hit);
+	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
+	float AlignmentStrength = 1.0f;
 
 	FVector CalculateBoundaryForce();
 
+	FVector CalculateAvoidanceForce(FHitResult& Hit);
+
+	FVector CalculateSeparationForce(const TArray<AActor*>& Neighbours);
+
+	FVector CalculateAlignmentForce(const TArray<AActor*>& Neighbours);
+	
 	FVector Velocity;
 
 private:
