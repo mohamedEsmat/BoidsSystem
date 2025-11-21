@@ -44,6 +44,12 @@ void ABoid::Tick(float DeltaTime)
 	}
 	Velocity += Acceleration * DeltaTime;
 
+	if(!Velocity.IsNearlyZero())
+	{
+		Velocity = Velocity.GetClampedToSize(0.0f, MaxSpeed);
+		SetActorRotation(Velocity.Rotation());
+	}
+
 	FVector NewLocation = GetActorLocation() + (Velocity * DeltaTime);
 	SetActorLocation(NewLocation);
 }

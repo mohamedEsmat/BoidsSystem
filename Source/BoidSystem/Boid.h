@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boid Properties")
 	float Speed = 600.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boid Properties")
+	float MaxSpeed = 800.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Boid Parameters")
 	float BoundryRadius = 2000.0f;
 
@@ -39,9 +42,9 @@ public:
 	FVector BoundryCenter = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = "Avoidance")
-	float AvoidanceDistance = 300.0f;
+	float AvoidanceDistance = 800.0f;
 	UPROPERTY(EditAnywhere, Category = "Avoidance")
-	float AvoidanceStrength = 500.0f;
+	float AvoidanceStrength = 1500.0f;
 
 	FVector CalculateAvoidanceForce(FHitResult& Hit);
 
