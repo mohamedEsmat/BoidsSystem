@@ -33,7 +33,7 @@ public:
 	float MaxSpeed = 800.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Boid Parameters")
-	float BoundryRadius = 2000.0f;
+	float BoundryRadius = 3000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Boid Parameters")
 	float BoundryStrength = 20.0f;
@@ -45,6 +45,14 @@ public:
 	float AvoidanceDistance = 800.0f;
 	UPROPERTY(EditAnywhere, Category = "Avoidance")
 	float AvoidanceStrength = 1500.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
+	float SeparationDistance = 150.f;
+
+	UPROPERTY(EditAnywhere, Category = "Flocking Parameters")
+	float SeparationStrength = 5.0f;
+
+	FVector CalculateSeparationForce(const TArray<AActor*>& Neighbours);
 
 	FVector CalculateAvoidanceForce(FHitResult& Hit);
 

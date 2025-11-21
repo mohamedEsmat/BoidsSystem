@@ -33,7 +33,7 @@ void ABoid::Tick(float DeltaTime)
 	FVector Acceleration = FVector::ZeroVector;
 	FHitResult AvoidanceHit;
 	FVector AvoidanceForce = CalculateAvoidanceForce(AvoidanceHit);
-	if(!AvoidanceForce.IsNearlyZero())
+	if (!AvoidanceForce.IsNearlyZero())
 	{
 		Acceleration += AvoidanceForce;
 	}
@@ -41,10 +41,16 @@ void ABoid::Tick(float DeltaTime)
 	{
 		FVector BoundaryForce = CalculateBoundaryForce();
 		Acceleration += BoundaryForce;
+
+		TArray<AActor*> Neighbors;
+		GetNeighborActors(Neighbors);
+
+		FVector SeparationForce = CalculateSeparationForce(Neighbors);
+		Acceleration += SeparationForce;
 	}
 	Velocity += Acceleration * DeltaTime;
 
-	if(!Velocity.IsNearlyZero())
+	if (!Velocity.IsNearlyZero())
 	{
 		Velocity = Velocity.GetClampedToSize(0.0f, MaxSpeed);
 		SetActorRotation(Velocity.Rotation());
@@ -115,5 +121,36 @@ FVector ABoid::CalculateAvoidanceForce(FHitResult& Hit)
 		return SteeringVector * AvoidanceStrength * ReactionFactor;
 	}
 	return FVector::ZeroVector;
+}
+
+FVector ABoid::CalculateSeparationForce(const TArray<AActor*>& Neighbours)
+{
+	FVector SeparationVector = FVector::ZeroVector;
+	int BoidsToSeparateFrom = 0;
+	FVector CurrentLocation = GetActorLocation();
+
+	for (AActor* NeighborActor : Neighbours)
+	{
+		ABoid* NeighborBoid = Cast<ABoid>(NeighborActor);
+		if (!NeighborBoid || NeighborBoid == this)
+		{
+			continue;
+		}
+
+		FVector NeighborLocation = NeighborBoid->GetActorLocation();
+		float Distance = FVector::Dist(CurrentLocation, NeighborLocation);
+
+		if (Distance > 0.0f && Distance < SeparationDistance)
+		{
+			FVector AwayVector = CurrentLocation - NeighborLocation;
+			SeparationVector += AwayVector.GetSafeNormal() / Distance;
+			BoidsToSeparateFrom++;
+		}
+	}
+	if (BoidsToSeparateFrom > 0)
+	{
+		SeparationVector = (SeparationVector / BoidsToSeparateFrom) * SeparationStrength;
+	}
+	return SeparationVector;
 }
 
