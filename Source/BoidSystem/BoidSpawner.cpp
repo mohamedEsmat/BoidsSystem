@@ -34,13 +34,13 @@ void ABoidSpawner::BeginPlay()
 			{
 				SpawnedBoids.Add(NewBoid);
 			}
+		}
 
-			for (ABoid* Boid : SpawnedBoids)
+		for (ABoid* Boid : SpawnedBoids)
+		{
+			if (Boid)
 			{
-				if (Boid)
-				{
-					Boid->SetAllBoidsReference(SpawnedBoids);
-				}
+				Boid->SetAllBoidsReference(SpawnedBoids);
 			}
 		}
 	}
