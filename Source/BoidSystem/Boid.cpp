@@ -5,6 +5,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "Kismet/KismetSystemLibrary.h" 
 #include "DrawDebugHelpers.h" 
+#include "BoidSpawner.h"
 
 // Sets default values
 ABoid::ABoid()
@@ -42,14 +43,16 @@ void ABoid::Tick(float DeltaTime)
 		FVector BoundaryForce = CalculateBoundaryForce();
 		Acceleration += BoundaryForce;
 
-		TArray<AActor*> Neighbors;
-		GetNeighborActors(Neighbors);
+		TArray<ABoid*> BoidNeighbors;
+		float MaxRadius = FMath::Max(FMath::Max(SeparationDistance, AlignmentDistance), CohesionDistance);
 
-		FVector SeparationForce = CalculateSeparationForce(Neighbors);
-		Acceleration += SeparationForce;
+        QueryNeighborsFromOctree(MaxRadius, BoidNeighbors); 
 
-		FVector AlignmentForce = CalculateAlignmentForce(Neighbors);
-		Acceleration += AlignmentForce;
+		FVector SeparationForce = CalculateSeparationForce(BoidNeighbors);
+		FVector AlignmentForce = CalculateAlignmentForce(BoidNeighbors);
+		FVector CohesionForce = CalculateCohesionForce(BoidNeighbors);
+
+		Acceleration += SeparationForce + AlignmentForce + CohesionForce;
 	}
 	Velocity += Acceleration * DeltaTime;
 
@@ -78,14 +81,16 @@ void ABoid::SetAllBoidsReference(const TArray<ABoid*>& AllBoids)
 	AllBoidsCache = AllBoids;
 }
 
-void ABoid::GetNeighborActors(TArray<AActor*>& OutActors) const
+void ABoid::SetParentSpawner(ABoidSpawner* Spawner)
 {
-	for (ABoid* Boid : AllBoidsCache)
+	ParentSpawner = Spawner;
+}
+
+void ABoid::QueryNeighborsFromOctree(float Radius, TArray<ABoid*>& OutNeighbors) const
+{
+	if (ParentSpawner)
 	{
-		if (Boid)
-		{
-			OutActors.Add(Boid);
-		}
+		ParentSpawner->OctreeManager.QueryNeighbors(GetActorLocation(), Radius, OutNeighbors);
 	}
 }
 
@@ -136,15 +141,14 @@ FVector ABoid::CalculateAvoidanceForce(FHitResult& Hit)
 	return FVector::ZeroVector;
 }
 
-FVector ABoid::CalculateSeparationForce(const TArray<AActor*>& Neighbours)
+FVector ABoid::CalculateSeparationForce(const TArray<ABoid*>& Neighbours)
 {
 	FVector SeparationVector = FVector::ZeroVector;
 	int BoidsToSeparateFrom = 0;
 	FVector CurrentLocation = GetActorLocation();
 
-	for (AActor* NeighborActor : Neighbours)
+	for (ABoid* NeighborBoid : Neighbours)
 	{
-		ABoid* NeighborBoid = Cast<ABoid>(NeighborActor);
 		if (!NeighborBoid || NeighborBoid == this)
 		{
 			continue;
@@ -167,15 +171,14 @@ FVector ABoid::CalculateSeparationForce(const TArray<AActor*>& Neighbours)
 	return SeparationVector;
 }
 
-FVector ABoid::CalculateAlignmentForce(const TArray<AActor*>& Neighbours)
+FVector ABoid::CalculateAlignmentForce(const TArray<ABoid*>& Neighbours)
 {
 	FVector AverageVelocity = FVector::ZeroVector;
 	int NeighborCount = 0;
 	FVector CurrentLocation = GetActorLocation();
 
-	for (AActor* NeighborActor : Neighbours)
+	for (ABoid* NeighborBoid : Neighbours)
 	{
-		ABoid* NeighborBoid = Cast<ABoid>(NeighborActor);
 		if (!NeighborBoid || NeighborBoid == this)
 		{
 			continue;
@@ -197,14 +200,13 @@ FVector ABoid::CalculateAlignmentForce(const TArray<AActor*>& Neighbours)
 	return FVector::ZeroVector;
 }
 
-FVector ABoid::CalculateCohesionForce(const TArray<AActor*>& Neighbours)
+FVector ABoid::CalculateCohesionForce(const TArray<ABoid*>& Neighbours)
 {
 	FVector CenterOfMass = FVector::ZeroVector;
 	int NeighborCount = 0;
 	FVector CurrentLocation = GetActorLocation();
-	for (AActor* NeighborActor : Neighbours)
+	for (ABoid* NeighborBoid : Neighbours)
 	{
-		ABoid* NeighborBoid = Cast<ABoid>(NeighborActor);
 		if (!NeighborBoid || NeighborBoid == this)
 		{
 			continue;

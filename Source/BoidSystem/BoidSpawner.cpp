@@ -4,6 +4,23 @@
 #include "BoidSpawner.h"
 #include "Boid.h"
 
+void FBoidOctreeManager::Initialize(const FVector& Center, float Extent)
+{
+	FVector HalfExntent(Extent,Extent,Extent);
+	WorldBounds = FBox(Center - HalfExntent, Center + FVector(Extent));
+	RootNode = MakeUnique<FBoidOctreeNode>(WorldBounds);
+}
+
+void FBoidOctreeManager::AddBoid(ABoid* Boid)
+{
+	
+}
+
+void FBoidOctreeManager::QueryNeighbors(const FVector& Location, float Radius, TArray<ABoid*>& OutNeighbors)
+{
+
+}
+
 // Sets default values
 ABoidSpawner::ABoidSpawner()
 {
@@ -36,11 +53,16 @@ void ABoidSpawner::BeginPlay()
 			}
 		}
 
+		if (SpawnedBoids.Num() > 0)
+		{
+			OctreeManager.Initialize(GetActorLocation(), 5000.0f);
+		}
+
 		for (ABoid* Boid : SpawnedBoids)
 		{
 			if (Boid)
 			{
-				Boid->SetAllBoidsReference(SpawnedBoids);
+				Boid->SetParentSpawner(this);
 			}
 		}
 	}
@@ -51,6 +73,10 @@ void ABoidSpawner::BeginPlay()
 void ABoidSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	OctreeManager.Reset();
+	for (ABoid* Boid : SpawnedBoids)
+	{
+		OctreeManager.AddBoid(Boid);
+	}
 }
 

@@ -68,11 +68,11 @@ public:
 
 	FVector CalculateAvoidanceForce(FHitResult& Hit);
 
-	FVector CalculateSeparationForce(const TArray<AActor*>& Neighbours);
+	FVector CalculateSeparationForce(const TArray<ABoid*>& Neighbours);
 
-	FVector CalculateAlignmentForce(const TArray<AActor*>& Neighbours);
+	FVector CalculateAlignmentForce(const TArray<ABoid*>& Neighbours);
 
-	FVector CalculateCohesionForce(const TArray<AActor*>& Neighbours);
+	FVector CalculateCohesionForce(const TArray<ABoid*>& Neighbours);
 	
 	FVector Velocity;
 
@@ -80,8 +80,13 @@ private:
 	UPROPERTY()
 	TArray<ABoid*> AllBoidsCache;
 
+	UPROPERTY()
+	class ABoidSpawner* ParentSpawner;
+
 public:
 	void SetAllBoidsReference(const TArray<ABoid*>& AllBoids);
 
-	void GetNeighborActors(TArray<AActor*>& OutActors) const;
+	void SetParentSpawner(class ABoidSpawner* Spawner);
+
+	void QueryNeighborsFromOctree(float Radius, TArray<ABoid*>& OutNeighbors) const;
 };
